@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X, Upload, Calendar } from 'lucide-react';
 import { mockBlogPosts } from '../../data/mockData';
@@ -15,6 +15,8 @@ const ManageBlogs = () => {
     offerName: '',
     content: ''
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openModal = (post?: BlogPost) => {
     if (post) {
@@ -48,6 +50,59 @@ const ManageBlogs = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.match('image.*')) {
+      toast.error('Please upload an image file (JPEG, PNG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // In a real app, you would upload to your server/cloud storage here
+      // For demo purposes, we'll use a mock upload with local URL
+      const mockUpload = () => {
+        return new Promise<string>((resolve) => {
+          setTimeout(() => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              resolve(event.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+          }, 1500);
+        });
+      };
+
+      const imageUrl = await mockUpload();
+      
+      setFormData(prev => ({
+        ...prev,
+        image: imageUrl
+      }));
+      
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to upload image');
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -225,26 +280,59 @@ const ManageBlogs = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Featured Image URL
+                    Featured Image
                   </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="url"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleInputChange}
-                      required
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <button
-                      type="button"
-                      className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200 transition-colors"
-                      title="Upload Image"
-                    >
-                      <Upload className="h-5 w-5" />
-                    </button>
+                  <div className="flex flex-col space-y-4">
+                    <div className="relative group">
+                      <div 
+                        className={`w-full h-48 rounded-lg border-2 border-dashed ${
+                          formData.image ? 'border-transparent' : 'border-gray-300'
+                        } overflow-hidden bg-gray-100 flex items-center justify-center`}
+                      >
+                        {formData.image ? (
+                          <img 
+                            src={formData.image} 
+                            alt="Current blog post" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center p-4">
+                            <Upload className="h-10 w-10 mx-auto text-gray-400" />
+                            <p className="text-gray-500 mt-2">No image selected</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="bg-black bg-opacity-50 rounded-lg p-2">
+                          <p className="text-white text-sm">Click to change image</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <motion.button
+                        type="button"
+                        onClick={triggerFileInput}
+                        className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isUploading}
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                      </motion.button>
+                    </div>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Recommended size: 800x500px or larger (Max 5MB)
+                  </p>
                 </div>
 
                 <div>
@@ -267,9 +355,10 @@ const ManageBlogs = () => {
                     className="flex-1 bg-yellow-400 text-black py-3 rounded-lg font-bold hover:bg-yellow-300 transition-colors flex items-center justify-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    disabled={isUploading}
                   >
                     <Save className="h-5 w-5" />
-                    <span>{editingPost ? 'Update' : 'Publish'} Post</span>
+                    <span>{isUploading ? 'Saving...' : (editingPost ? 'Update' : 'Publish')} Post</span>
                   </motion.button>
                   <motion.button
                     type="button"

@@ -297,9 +297,10 @@ const ManageBanner = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <button className="bg-yellow-400 text-black px-8 py-3 rounded-full text-lg font-bold hover:bg-yellow-300 transition-colors">
-                    Franchise with Us
-                  </button>
+                 <button className="bg-[#c57c2a] text-[#7a2d14] px-8 py-3 rounded-full text-lg font-bold hover:bg-[#d8913c] transition-colors">
+  Franchise with Us
+</button>
+
                 </motion.div>
               )}
             </div>

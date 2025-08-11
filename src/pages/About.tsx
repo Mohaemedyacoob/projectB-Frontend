@@ -37,7 +37,7 @@ const About = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section with Parallax */}
       <section 
-        className="relative h-screen flex items-center justify-center bg-fixed bg-cover bg-center"
+        className="relative  h-[70vh]  flex items-center justify-center bg-fixed bg-cover bg-center"
         style={{ 
           backgroundImage: 'url(https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=1200)'
         }}
@@ -131,21 +131,24 @@ const About = () => {
               </h2>
               <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
                 <p>
-                  It all started in 2009 when Tony "The Burger" Marinelli decided to leave 
-                  his corporate job and follow his true passion - creating the perfect burger. 
-                  What began as a small food truck in the streets of New York quickly became 
-                  a neighborhood favorite.
-                </p>
-                <p>
-                  With secret family recipes passed down through generations and an unwavering 
-                  commitment to quality, Burger Mafia grew from serving hungry office workers 
-                  to becoming the go-to destination for food lovers across the city.
-                </p>
-                <p>
-                  Today, we're not just a restaurant - we're a family. Every burger we make, 
-                  every pizza we bake, and every juice we blend carries the love and tradition 
-                  that started it all.
-                </p>
+                It all started with a simple dream — to serve Bengaluru the kind of burgers you can’t forget. 
+                In the heart of KR Puram, Burger Mafia fired up its grills and began crafting 
+                juicy, flavor-packed creations that would soon become the talk of the town.
+              </p>
+              <p>
+                With recipes perfected through passion, a dash of quirk, and only the freshest ingredients, 
+                we went from serving a handful of curious foodies to becoming the go-to spot 
+                for burger lovers, pizza fans, and snack hunters alike.
+              </p>
+              <p>
+                Today, Burger Mafia is more than just a place to eat — it’s a family. 
+                Every burger we flip, every pizza we bake, and every drink we blend 
+                carries the same love, energy, and flavor that started it all.
+              </p>
+              <p>
+                Because here, it’s not just food — it’s <strong>burger justice</strong>. 🍔🔥
+              </p>
+
               </div>
             </motion.div>
 

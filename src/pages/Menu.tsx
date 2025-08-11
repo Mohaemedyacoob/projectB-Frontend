@@ -36,7 +36,7 @@ const Menu = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            Our <span className="text-yellow-400">Menu</span>
+            Our <span style={{ color: '#c57c2a' }}>Menu</span>
           </motion.h1>
           <motion.p
             className="text-xl text-gray-300 max-w-2xl mx-auto"
@@ -127,13 +127,13 @@ const Menu = () => {
                     <p className="text-gray-600 mb-4 leading-relaxed">
                       {product.description}
                     </p>
-                    <motion.button
+                    {/* <motion.button
                       className="w-full bg-yellow-400 text-black py-3 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-colors duration-300"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       Add to Order
-                    </motion.button>
+                    </motion.button> */}
                   </div>
                 </motion.div>
               ))}

@@ -56,8 +56,8 @@ const Contact = () => {
     {
       icon: Phone,
       title: 'Call the Family',
-      details: '(555) 123-4567',
-      description: 'Mon-Sun: 10 AM - 11 PM'
+      details: '+91 89714 44404',
+      description: 'Mon-Sun: 10 AM - 6 PM'
     },
     {
       icon: Mail,
@@ -68,7 +68,7 @@ const Contact = () => {
     {
       icon: MapPin,
       title: 'Visit Our HQ',
-      details: '123 Mafia Street, New York, NY 10001',
+      details: '48, Ground Floor, Gokul Mansion, Ayyappanagar, Hoodi Main Road, KR Puram, Bengaluru, Karnataka',
       description: 'Come see where the magic happens'
     },
     {
@@ -145,7 +145,7 @@ const Contact = () => {
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
-                  placeholder="(555) 123-4567"
+                  placeholder="+91 "
                 />
               </div>
 

@@ -102,3 +102,56 @@ export const mockHeroBanner: HeroBanner = {
 
 export const mockContactLeads: ContactLead[] = [];
 export const mockFranchiseLeads: FranchiseLead[] = [];
+export const mockServices = [
+  {
+    id: 1,
+    title: "Quality Guaranteed",
+    description: "We use only the freshest ingredients and highest quality meats in all our dishes.",
+    icon: "check"
+  },
+  {
+    id: 2,
+    title: "Food Safety",
+    description: "Our kitchens maintain the highest standards of cleanliness and food safety protocols.",
+    icon: "shield"
+  },
+  {
+    id: 3,
+    title: "Fast Serve",
+    description: "Get your food delivered hot and fresh in under 30 minutes or it's on us.",
+    icon: "truck"
+  },
+  {
+    id: 4,
+    title: "24/7 Service",
+    description: "Craving our food at 3am? We've got you covered with round-the-clock service.",
+    icon: "clock"
+  }
+];
+
+export const mockTestimonials = [
+  {
+    id: 1,
+    name: "Sarah Johnson",
+    location: "New York, NY",
+    comment: "The best burgers I've ever had! The family meal deal is perfect for our weekly get-togethers.",
+    rating: 5,
+    avatar: "/path/to/avatar1.jpg"
+  },
+  {
+    id: 2,
+    name: "Michael Rodriguez",
+    location: "Chicago, IL",
+    comment: "Consistently amazing food. I've been coming here for years and they never disappoint.",
+    rating: 5,
+    avatar: "/path/to/avatar2.jpg"
+  },
+  {
+    id: 3,
+    name: "Emily Chen",
+    location: "San Francisco, CA",
+    comment: "Their late-night delivery saved me during finals week. Fast, hot, and delicious!",
+    rating: 4,
+    avatar: "/path/to/avatar3.jpg"
+  }
+];

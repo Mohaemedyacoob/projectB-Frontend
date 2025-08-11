@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Award, Clock, Heart } from 'lucide-react';
+import BMLogo from '../components/Images/BM_logo.png';
+
 
 const About = () => {
   const stats = [
@@ -57,7 +59,7 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
           >
-            Our <span className="text-yellow-400">Story</span>
+            Our <span style={{ color: '#c57c2a' }}>Story</span>
           </motion.h1>
           <motion.p
             className="text-xl md:text-2xl text-gray-200"
@@ -127,7 +129,7 @@ const About = () => {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-                The <span className="text-yellow-400">Family</span> Begins
+                The <span style={{ color: '#c57c2a' }}>Family</span> Begins
               </h2>
               <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
                 <p>
@@ -164,8 +166,16 @@ const About = () => {
                 alt="Our kitchen"
                 className="w-full h-96 object-cover rounded-2xl shadow-2xl"
               />
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center shadow-xl">
-                <span className="text-3xl">👨‍🍳</span>
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center shadow-xl"
+                style={{ backgroundColor: '#f4e1c1  ' }}
+              >
+                <motion.img
+                  src={BMLogo}
+                  alt="Burger Mafia Logo"
+                  className="h-10 w-auto"
+                  whileHover={{ scale: 2.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                />
               </div>
             </motion.div>
           </div>
@@ -183,7 +193,7 @@ const About = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-              Our <span className="text-yellow-400">Values</span>
+              Our <span style={{ color: '#c57c2a' }}>Values</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               These principles guide everything we do, from sourcing ingredients to serving our customers
@@ -221,7 +231,7 @@ const About = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Meet the <span className="text-yellow-400">Family</span>
+              Meet the <span style={{ color: '#c57c2a' }}>Family</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               The talented individuals who make the magic happen every single day

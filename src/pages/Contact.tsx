@@ -90,7 +90,8 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            Contact the <span className="text-yellow-400">Family</span>
+            <span className="text-[#7a2d14]">
+            Contact the </span><span className="text-[#c57c2a]">Family</span>
           </motion.h1>
           <motion.p
             className="text-xl text-gray-300 max-w-2xl mx-auto"
@@ -113,7 +114,7 @@ const Contact = () => {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-3xl font-bold text-black mb-6">
-              Send us a <span className="text-yellow-400">Message</span>
+              Send us a <span className="text-[#c57c2a]">Message</span>
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,7 +129,7 @@ const Contact = () => {
                   value={formData.customerName}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:text-[#c57c2a] focus:ring-0 transition-colors duration-300"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -184,10 +185,11 @@ const Contact = () => {
                 type="submit"
                 disabled={isSubmitting}
                 className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-                  isSubmitting
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-yellow-400 text-black hover:bg-yellow-300 transform hover:scale-105'
-                }`}
+                isSubmitting
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-[#c57c2a] text-white hover:bg-[#d8903c] transform hover:scale-105'
+              }`}
+
                 whileTap={{ scale: 0.95 }}
               >
                 {isSubmitting ? (
@@ -211,7 +213,7 @@ const Contact = () => {
           >
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">
-                Get in <span className="text-yellow-400">Touch</span>
+                Get in <span className="text-[#c57c2a]">Touch</span>
               </h2>
               <p className="text-gray-600 text-lg mb-8">
                 Whether you have a question about our menu, want to make a reservation, 
@@ -230,7 +232,7 @@ const Contact = () => {
               >
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-yellow-400 text-black rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-[#c57c2a] text-black rounded-full flex items-center justify-center">
                       <info.icon className="h-6 w-6" />
                     </div>
                   </div>

@@ -137,7 +137,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Latest from the <span className="text-yellow-400">Family</span>
+              Latest from the <span className="text-[#c57c2a]">Family</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               Stay updated with our latest offers, news, and mouth-watering content
@@ -220,7 +220,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              What Our <span className="text-yellow-400">Family</span> Says
+              What Our <span className="text-[#c57c2a]">Family</span> Says
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
               Don't just take our word for it - hear from our satisfied customers
@@ -270,7 +270,7 @@ const Home = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="md:flex">
-              <div className="md:w-1/2 bg-yellow-500 p-12 flex flex-col justify-center">
+              <div className="md:w-1/2 bg-[#c57c2a] p-12 flex flex-col justify-center">
                 <h3 className="text-3xl font-bold text-black mb-4">Share Your Experience</h3>
                 <p className="text-black mb-6">
                   We value your feedback to help us improve and serve you better
@@ -341,7 +341,7 @@ const Home = () => {
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-yellow-500 text-black py-4 px-6 rounded-lg font-bold hover:bg-yellow-400 transition-colors duration-300"
+                    className="w-full bg-[#c57c2a] text-black py-4 px-6 rounded-lg font-bold hover:bg-yellow-400 transition-colors duration-300"
                   >
                     Submit Feedback
                   </button>
@@ -361,17 +361,17 @@ const Home = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Join the <span className="text-yellow-400">Mafia</span> Today
+            {/* <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Join the <span className="text-[#c57c2a]">Mafia</span> Today
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               Experience the best burgers, pizzas, and drinks in town. 
               Once you taste our food, you'll be part of the family forever.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            </p> */}
+            {/* <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/menu"
-                className="bg-yellow-500 text-black px-8 py-4 rounded-full text-lg font-bold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105"
+                className="bg-[#c57c2a] text-black px-8 py-4 rounded-full text-lg font-bold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105"
               >
                 View Menu
               </Link>
@@ -387,7 +387,7 @@ const Home = () => {
               >
                 Contact Us
               </Link>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </section>

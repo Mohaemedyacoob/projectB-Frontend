@@ -69,7 +69,7 @@ const Menu = () => {
                   onClick={() => filterProducts(category)}
                   className={`px-6 py-2 rounded-full font-medium transition-all duration-300 ${
                     activeFilter === category
-                      ? 'bg-yellow-400 text-black shadow-lg'
+                      ? 'bg-[#c57c2a] text-black shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                   whileHover={{ scale: 1.05 }}
@@ -116,7 +116,7 @@ const Menu = () => {
                       </span>
                     </div>
                     <div className="absolute top-4 right-4 bg-black text-yellow-400 px-3 py-1 rounded-full">
-                      <span className="text-lg font-bold">${product.price}</span>
+                      <span className="text-lg font-bold">₹{product.price}</span>
                     </div>
                   </div>
                   

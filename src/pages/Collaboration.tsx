@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Crown, Handshake, TrendingUp, Users, Send, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { FranchiseLead } from '../types';
+import BMLogo from "../components/Images/BM_logo.png";
+
 
 const Collaboration = () => {
   const [formData, setFormData] = useState({
@@ -77,14 +79,14 @@ const Collaboration = () => {
     }
   ];
 
-  const requirements = [
-    '💰 Initial investment: $150,000 - $300,000',
-    '🏢 Retail space requirement: 1,200 - 2,500 sq ft',
-    '📈 Previous business or management experience preferred',
-    '❤️ Passion for quality food and customer service',
-    '📍 Prime location in high-traffic area',
-    '👥 Commitment to brand standards and values'
-  ];
+  // const requirements = [
+  //   '💰 Initial investment: $150,000 - $300,000',
+  //   '🏢 Retail space requirement: 1,200 - 2,500 sq ft',
+  //   '📈 Previous business or management experience preferred',
+  //   '❤️ Passion for quality food and customer service',
+  //   '📍 Prime location in high-traffic area',
+  //   '👥 Commitment to brand standards and values'
+  // ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,7 +112,12 @@ const Collaboration = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.8 }}
           >
-            <Crown className="h-20 w-20 text-yellow-400 mx-auto mb-4" />
+            <img
+            src={BMLogo}
+            alt="Burger Mafia Logo"
+            className="h-20 w-20 mx-auto mb-4 object-contain"
+          />
+
           </motion.div>
           
           <motion.h1
@@ -119,7 +126,7 @@ const Collaboration = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Join the <span className="text-yellow-400">Mafia</span>
+            <span className="text-[#7a2d14]">Join the </span><span className="text-[#c57c2a]">Mafia</span>
           </motion.h1>
           
           <motion.p
@@ -157,7 +164,7 @@ const Collaboration = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-              Why Choose <span className="text-yellow-400">Burger Mafia</span>?
+              Why Choose <span className="text-[#c57c2a]">Burger Mafia</span>?
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               We provide everything you need to build a successful and profitable franchise
@@ -187,7 +194,7 @@ const Collaboration = () => {
       </section>
 
       {/* Requirements Section */}
-      <section className="py-20 bg-black text-white">
+      {/* <section className="py-20 bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -234,7 +241,7 @@ const Collaboration = () => {
             </motion.div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Application Form */}
       <section id="application" className="py-20 bg-gray-50">
@@ -291,7 +298,7 @@ const Collaboration = () => {
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border-2 border-black rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
-                    placeholder="(555) 123-4567"
+                    placeholder="+91"
                   />
                 </div>
               </div>

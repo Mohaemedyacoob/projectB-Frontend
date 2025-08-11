@@ -189,7 +189,7 @@ const ManageProducts = () => {
                 </span>
               </div>
               <div className="absolute top-4 right-4 bg-black text-yellow-400 px-3 py-1 rounded-full">
-                <span className="text-lg font-bold">${product.price}</span>
+                <span className="text-lg font-bold">₹{product.price}</span>
               </div>
             </div>
             
@@ -267,7 +267,7 @@ const ManageProducts = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price ($)
+                    Price (₹)
                   </label>
                   <input
                     type="number"

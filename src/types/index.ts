@@ -10,11 +10,10 @@ export interface Product {
 
 export interface BlogPost {
   id: string;
-  title: string;
+  blog_name: string;
   image: string;
-  offerName: string;
-  content?: string;
-  createdAt: Date;
+  created_at: string;  // Changed from createdAt to created_at
+  updated_at?: string;
 }
 
 export interface ContactLead {
@@ -49,3 +48,4 @@ export interface User {
   username: string;
   role: 'admin';
 }
+

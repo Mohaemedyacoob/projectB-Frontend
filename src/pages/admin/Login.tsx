@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [isLogging, setIsLogging] = useState(false);
@@ -27,7 +27,8 @@ const Login = () => {
     setIsLogging(true);
 
     try {
-      const success = await login(credentials.username, credentials.password);
+      console.log(credentials.email, credentials.password);
+      const success = await login(credentials.email, credentials.password);
       if (success) {
         toast.success('👑 Welcome back to the Mafia HQ!');
         navigate('/admin');
@@ -67,20 +68,20 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-              Username
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                id="username"
-                name="username"
-                value={credentials.username}
+                id="email"
+                name="email"
+                value={credentials.email}
                 onChange={handleInputChange}
                 required
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
-                placeholder="Enter username"
+                placeholder="Enter mail id"
               />
             </div>
           </div>
@@ -125,7 +126,7 @@ const Login = () => {
         <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
           <p className="text-sm text-yellow-800">
             <strong>Demo Credentials:</strong><br />
-            Username: admin<br />
+            Email: admin@gmail.com<br />
             Password: burgermafia123
           </p>
         </div>

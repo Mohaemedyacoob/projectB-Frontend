@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Handshake, TrendingUp, Users, Send, DollarSign } from 'lucide-react';
+import { Crown, Handshake, TrendingUp, Users, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { FranchiseLead } from '../types';
 import BMLogo from "../components/Images/BM_logo.png";
 
+interface CollaborationFormData {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  franchise_interest: boolean;
+}
 
 const Collaboration = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CollaborationFormData>({
     name: '',
     phone: '',
     email: '',
     message: '',
-    franchiseInterest: false
+    franchise_interest: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -29,28 +36,41 @@ const Collaboration = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const franchiseLead: FranchiseLead = {
-        id: Date.now().toString(),
-        ...formData,
-        createdAt: new Date()
-      };
+      const response = await fetch('http://127.0.0.1:8000/api/interest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
 
-      // In a real app, you would save this to your backend
-      console.log('Franchise Lead:', franchiseLead);
+      const data = await response.json();
 
-      toast.success('🎯 Application received! Welcome to the family consideration process!');
+      if (!response.ok) {
+        // Handle validation errors
+        if (data.errors) {
+          Object.values(data.errors).forEach((errorArray: any) => {
+            errorArray.forEach((error: string) => {
+              toast.error(error);
+            });
+          });
+          return;
+        }
+        throw new Error(data.message || 'Failed to submit form');
+      }
+
+      toast.success(data.message || '🎯 Application received! Welcome to the family consideration process!');
       setFormData({
         name: '',
         phone: '',
         email: '',
         message: '',
-        franchiseInterest: false
+        franchise_interest: false
       });
-    } catch (error) {
-      toast.error('Oops! Something went wrong. Please try again.');
+    } catch (error: any) {
+      console.error('Submission error:', error);
+      toast.error(error.message || 'Oops! Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -79,15 +99,6 @@ const Collaboration = () => {
     }
   ];
 
-  // const requirements = [
-  //   '💰 Initial investment: $150,000 - $300,000',
-  //   '🏢 Retail space requirement: 1,200 - 2,500 sq ft',
-  //   '📈 Previous business or management experience preferred',
-  //   '❤️ Passion for quality food and customer service',
-  //   '📍 Prime location in high-traffic area',
-  //   '👥 Commitment to brand standards and values'
-  // ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -113,11 +124,10 @@ const Collaboration = () => {
             transition={{ delay: 0.2, duration: 0.8 }}
           >
             <img
-            src={BMLogo}
-            alt="Burger Mafia Logo"
-            className="h-20 w-20 mx-auto mb-4 object-contain"
-          />
-
+              src={BMLogo}
+              alt="Burger Mafia Logo"
+              className="h-20 w-20 mx-auto mb-4 object-contain"
+            />
           </motion.div>
           
           <motion.h1
@@ -192,56 +202,6 @@ const Collaboration = () => {
           </div>
         </div>
       </section>
-
-      {/* Requirements Section */}
-      {/* <section className="py-20 bg-black text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="text-yellow-400">Investment</span> Requirements
-            </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Here's what you need to become a proud member of the Burger Mafia family
-            </p>
-          </motion.div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {requirements.map((requirement, index) => (
-                <motion.div
-                  key={index}
-                  className="flex items-center space-x-3 bg-gray-800 rounded-xl p-6 hover:bg-gray-700 transition-colors duration-300"
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                >
-                  <span className="text-2xl">{requirement.split(' ')[0]}</span>
-                  <span className="text-white font-medium">{requirement.substring(3)}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div
-              className="text-center mt-12 p-8 bg-yellow-400 text-black rounded-2xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
-              <DollarSign className="h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-2">ROI Expected: 25-30%</h3>
-              <p className="text-lg">Average payback period: 3-4 years with proper management</p>
-            </motion.div>
-          </div>
-        </div>
-      </section> */}
 
       {/* Application Form */}
       <section id="application" className="py-20 bg-gray-50">
@@ -338,13 +298,13 @@ const Collaboration = () => {
               <div className="flex items-center space-x-3">
                 <input
                   type="checkbox"
-                  id="franchiseInterest"
-                  name="franchiseInterest"
-                  checked={formData.franchiseInterest}
+                  id="franchise_interest"
+                  name="franchise_interest"
+                  checked={formData.franchise_interest}
                   onChange={handleInputChange}
                   className="w-5 h-5 text-yellow-400 border-2 border-gray-300 rounded focus:ring-yellow-400"
                 />
-                <label htmlFor="franchiseInterest" className="text-gray-700 font-medium">
+                <label htmlFor="franchise_interest" className="text-gray-700 font-medium">
                   I'm seriously interested in franchise opportunities and have the required investment
                 </label>
               </div>

@@ -89,9 +89,10 @@ const ManageProducts = () => {
                         description.toLowerCase().includes(searchTermLower);
     
     // Handle case-insensitive category comparison
-    const matchesCategory = categoryFilter 
-      ? category === categoryFilter.toLowerCase() 
-      : true;
+    // In your filtering logic:
+  const matchesCategory = categoryFilter 
+    ? product.category.toLowerCase() === categoryFilter.toLowerCase()
+    : true;
     
     return matchesSearch && matchesCategory;
   });
@@ -127,7 +128,7 @@ const ManageProducts = () => {
         name: '',
         price: 0,
         description: '',
-        category: 'Burger',
+        category: 'burger',
         image: ''
       });
     }
@@ -192,6 +193,11 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
   // Form validation
   const validateForm = () => {
+  const validCategories = ['burger', 'pizza', 'juice'];
+  if (!validCategories.includes(formData.category.toLowerCase())) {
+    toast.error('Invalid category selected');
+    return false;
+  }
     const errors = [];
     if (!formData.name.trim()) errors.push('Name is required');
     if (formData.price <= 0) errors.push('Price must be positive');
@@ -216,7 +222,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const success = await updateProduct(editingProduct.id, formData);
         if (success) {
           const updatedProducts = await fetchProducts();
-          setProducts(updatedProducts );
+          setProducts(updatedProducts);
           toast.success('🍔 Product updated successfully!');
           closeModal();
         }
@@ -521,17 +527,17 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-2">
                     Category
                   </label>
-                  <select
-                    id="product-category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    aria-required="true"
-                  >
-                    <option value="burger">Burger</option>
-                    <option value="pizza">Pizza</option>
-                    <option value="juice">Juice</option>
+                <select
+                  id="product-category"
+                  name="category"
+                  value={formData.category.toLowerCase()} // Convert to lowercase
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                  aria-required="true"
+                >
+                  <option value="burger">Burger</option>
+                  <option value="pizza">Pizza</option>
+                  <option value="juice">Juice</option>
                 </select>
                 </div>
 

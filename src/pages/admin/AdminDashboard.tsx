@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import ManageProducts from '../../components/admin/ManageProducts';
 import ManageBlogs from '../../components/admin/ManageBlogs';
 import ViewLeads from '../../components/admin/ViewLeads';
+import ViewFranchise from '../../components/admin/viewfranchise';
 import ManageBanner from '../../components/admin/ManageBanner';
 import toast from 'react-hot-toast';
 
@@ -34,9 +35,9 @@ const AdminDashboard = () => {
       case 'blogs':
         return <ManageBlogs />;
       case 'contact-leads':
-        return <ViewLeads type="contact" />;
+        return <ViewLeads />;
       case 'franchise-leads':
-        return <ViewLeads type="franchise" />;
+        return <ViewFranchise/>;
       case 'banner':
         return <ManageBanner />;
       default:

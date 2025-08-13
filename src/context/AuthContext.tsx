@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createProduct = async (data: Omit<Product, 'id' | 'createdAt'> & { imageFile?: File }): Promise<boolean> => {
+ const createProduct = async (data: Omit<Product, 'id' | 'createdAt'> & { imageFile?: File }): Promise<boolean> => {
   try {
     const formData = new FormData();
     
@@ -184,12 +184,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     formData.append('name', data.name);
     formData.append('price', data.price.toString());
     formData.append('description', data.description);
-    formData.append('category', data.category.toLowerCase()); // Ensure lowercase
-    
+    formData.append('category', data.category.toLowerCase()); // Convert to lowercase    
     // Handle image file
     if (data.imageFile) {
       formData.append('image', data.imageFile);
-    } else if (data.image.startsWith('blob:')) {
+    } if (data.image.startsWith('blob:')) {
       // Convert blob URL to file
       const response = await fetch(data.image);
       const blob = await response.blob();

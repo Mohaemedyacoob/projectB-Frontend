@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ContactLead } from '../types';
+import axios from 'axios';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerPhone: '',
-    email: '',
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,27 +26,33 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const contactLead: ContactLead = {
-        id: Date.now().toString(),
-        ...formData,
-        createdAt: new Date()
-      };
+      const response = await axios.post('http://127.0.0.1:8000/api/contact', formData);
 
-      // In a real app, you would save this to your backend
-      console.log('Contact Lead:', contactLead);
-
-      toast.success('🍔 Message sent! The family will get back to you soon!');
-      setFormData({
-        customerName: '',
-        customerPhone: '',
-        email: '',
-        message: ''
-      });
+      if (response.data.status) {
+        toast.success('🍔 Message sent! The family will get back to you soon!');
+        setFormData({
+          customer_name: '',
+          customer_phone: '',
+          customer_email: '',
+          message: ''
+        });
+      } else {
+        throw new Error('Failed to submit form');
+      }
     } catch (error) {
-      toast.error('Oops! Something went wrong. Please try again.');
+      if (axios.isAxiosError(error) && error.response) {
+        // Handle validation errors from Laravel
+        if (error.response.status === 422 && error.response.data.errors) {
+          const errors = error.response.data.errors;
+          Object.keys(errors).forEach(key => {
+            toast.error(errors[key][0]);
+          });
+        } else {
+          toast.error(error.response.data.message || 'Oops! Something went wrong. Please try again.');
+        }
+      } else {
+        toast.error('Oops! Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +96,7 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-[#7a2d14]">
-            Contact the </span><span className="text-[#c57c2a]">Family</span>
+            <span className="text-[#7a2d14]">Contact the </span><span className="text-[#c57c2a]">Family</span>
           </motion.h1>
           <motion.p
             className="text-xl text-gray-300 max-w-2xl mx-auto"
@@ -119,14 +124,14 @@ const Contact = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="customerName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="customer_name" className="block text-sm font-medium text-gray-700 mb-2">
                   Your Name *
                 </label>
                 <input
                   type="text"
-                  id="customerName"
-                  name="customerName"
-                  value={formData.customerName}
+                  id="customer_name"
+                  name="customer_name"
+                  value={formData.customer_name}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:text-[#c57c2a] focus:ring-0 transition-colors duration-300"
@@ -135,14 +140,14 @@ const Contact = () => {
               </div>
 
               <div>
-                <label htmlFor="customerPhone" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="customer_phone" className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number *
                 </label>
                 <input
                   type="tel"
-                  id="customerPhone"
-                  name="customerPhone"
-                  value={formData.customerPhone}
+                  id="customer_phone"
+                  name="customer_phone"
+                  value={formData.customer_phone}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
@@ -151,14 +156,14 @@ const Contact = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="customer_email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
                 </label>
                 <input
                   type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  id="customer_email"
+                  name="customer_email"
+                  value={formData.customer_email}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-yellow-400 focus:ring-0 transition-colors duration-300"
                   placeholder="your@email.com"
@@ -185,11 +190,10 @@ const Contact = () => {
                 type="submit"
                 disabled={isSubmitting}
                 className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-                isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-[#c57c2a] text-white hover:bg-[#d8903c] transform hover:scale-105'
-              }`}
-
+                  isSubmitting
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-[#c57c2a] text-white hover:bg-[#d8903c] transform hover:scale-105'
+                }`}
                 whileTap={{ scale: 0.95 }}
               >
                 {isSubmitting ? (

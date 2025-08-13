@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   price: number;
   description: string;
-  category: 'Pizza' | 'Burger' | 'Juice';
+  category: 'burger' | 'pizza' | 'juice'; // lowercase
   image: string;
   createdAt: Date;
 }
@@ -12,27 +12,27 @@ export interface BlogPost {
   id: string;
   blog_name: string;
   image: string;
-  created_at: string;  // Changed from createdAt to created_at
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ContactLead {
   id: string;
-  customerName: string;
-  customerPhone: string;
-  email?: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string;
   message: string;
   createdAt: Date;
 }
 
-export interface FranchiseLead {
+export interface CollaborationInterest {
   id: string;
-  name: string;
-  phone: string;
+  name: string;          // Changed from customerName
+  phone: string;         // Changed from customerPhone
   email: string;
   message: string;
-  franchiseInterest: boolean;
-  createdAt: Date;
+  franchise_interest: boolean;  // Added this
+  created_at: string;    // Changed from createdAt (Date)
 }
 
 export interface HeroBanner {

@@ -13,6 +13,16 @@ interface ProductFormData extends Omit<Product, 'id' | 'createdAt'> {
 
 const PRODUCTS_PER_PAGE = 6;
 
+// Price formatting utility function
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(price);
+};
+
 const ManageProducts = () => {
   const { fetchProducts, createProduct, updateProduct, deleteProduct } = useAuth();
   
@@ -303,7 +313,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           </span>
         </div>
         <div className="absolute top-4 right-4 bg-black text-yellow-400 px-3 py-1 rounded-full">
-          <span className="text-lg font-bold">₹{product.price}</span>
+          <span className="text-lg font-bold">{formatPrice(product.price)}</span>
         </div>
       </div>
       
@@ -521,6 +531,11 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     placeholder="0.00"
                     aria-required="true"
                   />
+                  {formData.price > 0 && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Displayed as: {formatPrice(formData.price)}
+                    </p>
+                  )}
                 </div>
 
                 <div>

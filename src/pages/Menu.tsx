@@ -1,21 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Filter } from 'lucide-react';
-import { mockProducts } from '../data/mockData';
 import { Product } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const Menu = () => {
   const [activeFilter, setActiveFilter] = useState<'All' | Product['category']>('All');
-  const [filteredProducts, setFilteredProducts] = useState(mockProducts);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { fetchProducts } = useAuth();
 
-  const categories: Array<'All' | Product['category']> = ['All', 'Burger', 'Pizza', 'Juice'];
+  const categories: Array<'All' | Product['category']> = ['All', 'burger', 'pizza', 'juice'];
+
+  // Fetch products from API
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchProducts();
+        
+        // Handle different response formats
+        let productsArray: Product[] = [];
+        
+        if (Array.isArray(response)) {
+          productsArray = response;
+        } else if (response && Array.isArray(response.data)) {
+          productsArray = response.data;
+        } else if (response && typeof response === 'object') {
+          // Try to extract products from various common API response structures
+          productsArray = response.products || response.items || response.data || [];
+        }
+        
+        setAllProducts(productsArray);
+        setFilteredProducts(productsArray);
+        setError(null);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Failed to load products. Please try again later.');
+        setAllProducts([]);
+        setFilteredProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [fetchProducts]);
 
   const filterProducts = (category: 'All' | Product['category']) => {
     setActiveFilter(category);
     if (category === 'All') {
-      setFilteredProducts(mockProducts);
+      setFilteredProducts(allProducts);
     } else {
-      setFilteredProducts(mockProducts.filter(product => product.category === category));
+      setFilteredProducts(allProducts.filter(product => product.category === category));
     }
   };
 
@@ -86,61 +125,64 @@ const Menu = () => {
       {/* Products Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeFilter}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1, duration: 0.6 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className="relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-64 object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className={`px-3 py-1 rounded-full text-sm font-bold ${categoryColors[product.category]}`}>
-                        {product.category}
-                      </span>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-2xl text-red-500">{error}</p>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeFilter}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.6 }}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <div className="relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-64 object-cover"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${categoryColors[product.category]}`}>
+                          {product.category}
+                        </span>
+                      </div>
+                      <div className="absolute top-4 right-4 bg-black text-yellow-400 px-3 py-1 rounded-full">
+                        <span className="text-lg font-bold">₹{product.price}</span>
+                      </div>
                     </div>
-                    <div className="absolute top-4 right-4 bg-black text-yellow-400 px-3 py-1 rounded-full">
-                      <span className="text-lg font-bold">₹{product.price}</span>
+                    
+                    <div className="p-6">
+                      <h3 className="text-2xl font-bold text-black mb-3">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 mb-4 leading-relaxed">
+                        {product.description}
+                      </p>
                     </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-black mb-3">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      {product.description}
-                    </p>
-                    {/* <motion.button
-                      className="w-full bg-yellow-400 text-black py-3 rounded-xl font-bold text-lg hover:bg-yellow-300 transition-colors duration-300"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Add to Order
-                    </motion.button> */}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          )}
 
-          {filteredProducts.length === 0 && (
+          {!isLoading && filteredProducts.length === 0 && (
             <motion.div
               className="text-center py-16"
               initial={{ opacity: 0 }}
@@ -148,7 +190,9 @@ const Menu = () => {
               transition={{ duration: 0.5 }}
             >
               <p className="text-2xl text-gray-500">
-                No items found in this category
+                {allProducts.length === 0 
+                  ? 'No products available' 
+                  : 'No items found in this category'}
               </p>
             </motion.div>
           )}

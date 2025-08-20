@@ -1,17 +1,21 @@
-import React, { useState, useRef, useMemo, useEffect, useContext } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, Save, X, Upload, Search } from 'lucide-react';
 import { Product } from '../../types';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
+// Improved type definitions
 type Category = 'burger' | 'pizza' | 'juice';
 
 interface ProductFormData extends Omit<Product, 'id' | 'createdAt'> {
   imageFile?: File;
 }
 
+// Constants
 const PRODUCTS_PER_PAGE = 6;
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 
 // Price formatting utility function
 const formatPrice = (price: number): string => {
@@ -23,276 +27,23 @@ const formatPrice = (price: number): string => {
   }).format(price);
 };
 
-const ManageProducts = () => {
-  const { fetchProducts, createProduct, updateProduct, deleteProduct } = useAuth();
-  
-  // State management
-  const [formData, setFormData] = useState<ProductFormData>({
-  name: '',
-  price: 0,
-  description: '',
-  category: 'Burger', // lowercase
-  image: '',
-  imageFile: undefined
-});
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<Category | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Fetch products on mount
-  useEffect(() => {
-    const loadProducts = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetchProducts();
-      console.log('API Response:', response);
-      
-      // Handle both cases: direct array or object with data property
-      let productsArray: Product[];
-      if (Array.isArray(response)) {
-        productsArray = response;
-      } else if (response && Array.isArray(response.data)) {
-        productsArray = response.data;
-      } else {
-        console.warn('Unexpected API response format:', response);
-        setProducts([]);
-        throw new Error('Invalid products data format');
-      }
-      
-      setProducts(productsArray);
-    } catch (error) {
-      console.error('Error loading products:', error);
-      toast.error('Failed to load products');
-      setProducts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  loadProducts();
-}, [fetchProducts]);
-
-
-  // Memoized filtered products
-  const filteredProducts = useMemo(() => {
-  // Ensure products is always an array
-  const safeProducts = Array.isArray(products) ? products : [];
-  
-  return safeProducts.filter(product => {
-    // Skip invalid products
-    if (!product || typeof product !== 'object') return false;
-    
-    // Provide defaults for required fields
-    const name = String(product.name || '');
-    const description = String(product.description || '');
-    const category = String(product.category || '').toLowerCase();
-    
-    const searchTermLower = String(searchTerm || '').toLowerCase();
-    const matchesSearch = name.toLowerCase().includes(searchTermLower) || 
-                        description.toLowerCase().includes(searchTermLower);
-    
-    // Handle case-insensitive category comparison
-    // In your filtering logic:
-  const matchesCategory = categoryFilter 
-    ? product.category.toLowerCase() === categoryFilter.toLowerCase()
-    : true;
-    
-    return matchesSearch && matchesCategory;
-  });
-}, [products, searchTerm, categoryFilter]);
-
-  // Pagination calculations
-  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
-  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-
-  // Category colors mapping
-  const categoryColors = {
-    Burger: 'bg-red-100 text-red-800',
-    Pizza: 'bg-orange-100 text-orange-800',
-    Juice: 'bg-green-100 text-green-800'
-  };
-
-  // Modal handlers
-  const openModal = (product?: Product) => {
-    if (product) {
-      setEditingProduct(product);
-      setFormData({
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category: product.category,
-        image: product.image
-      });
-    } else {
-      setEditingProduct(null);
-      setFormData({
-        name: '',
-        price: 0,
-        description: '',
-        category: 'burger',
-        image: ''
-      });
-    }
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingProduct(null);
-  };
-
-  // Form handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value
-    }));
-  };
-
-const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  // Validate file type
-  const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-  if (!validTypes.includes(file.type)) {
-    toast.error('Please upload a JPEG, PNG, or JPG image');
-    return;
-  }
-
-  // Validate file size (2MB max)
-  if (file.size > 2 * 1024 * 1024) {
-    toast.error('Image size should be less than 2MB');
-    return;
-  }
-
-  setIsUploading(true);
-
-  try {
-    // Create preview URL and store file
-    const previewUrl = URL.createObjectURL(file);
-    
-    setFormData(prev => ({
-      ...prev,
-      image: previewUrl,
-      imageFile: file // Store the actual file object
-    }));
-    
-    toast.success('Image selected successfully!');
-  } catch (error) {
-    toast.error('Failed to process image');
-    console.error('Upload error:', error);
-  } finally {
-    setIsUploading(false);
-  }
+// Category colors mapping
+const categoryColors: Record<Category, string> = {
+  burger: 'bg-red-100 text-red-800',
+  pizza: 'bg-orange-100 text-orange-800',
+  juice: 'bg-green-100 text-green-800'
 };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Form validation
-  const validateForm = () => {
-  const validCategories = ['burger', 'pizza', 'juice'];
-  if (!validCategories.includes(formData.category.toLowerCase())) {
-    toast.error('Invalid category selected');
-    return false;
-  }
-    const errors = [];
-    if (!formData.name.trim()) errors.push('Name is required');
-    if (formData.price <= 0) errors.push('Price must be positive');
-    if (!formData.description.trim()) errors.push('Description is required');
-    if (!formData.image) errors.push('Image is required');
-    
-    if (errors.length > 0) {
-      errors.forEach(error => toast.error(error));
-      return false;
-    }
-    return true;
-  };
-
- const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
-    try {
-      if (editingProduct) {
-        // Update existing product
-        const success = await updateProduct(editingProduct.id, formData);
-        if (success) {
-          const updatedProducts = await fetchProducts();
-          setProducts(updatedProducts);
-          toast.success('🍔 Product updated successfully!');
-          closeModal();
-        }
-      } else {
-        // Add new product
-        const success = await createProduct({
-          ...formData,
-          price: Number(formData.price) // Ensure price is a number
-        });
-        console.log('Sending product data:', {
-          ...formData,
-          price: Number(formData.price)
-        });
-        
-        if (success) {
-          const updatedProducts = await fetchProducts();
-          setProducts(updatedProducts);
-          toast.success('🎉 New product added to the menu!');
-          closeModal();
-        }
-      }
-    } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('An error occurred while saving the product');
-    }
-  };
-
-  // Product actions
-  const handleDelete = async (productId: string) => {
-    if (window.confirm('Are you sure you want to remove this item from the menu?')) {
-      try {
-        const success = await deleteProduct(productId);
-        if (success) {
-          // Refresh products after deletion
-          const updatedProducts = await fetchProducts();
-          if (updatedProducts) {
-            setProducts(updatedProducts);
-            toast.success('🗑️ Product removed from menu!');
-            
-            // Reset to first page if current page becomes empty
-            if (currentProducts.length === 1 && currentPage > 1) {
-              setCurrentPage(currentPage - 1);
-            }
-          }
-        } else {
-          toast.error('Failed to delete product');
-        }
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        toast.error('An error occurred while deleting the product');
-      }
-    }
-  };
-
-  // Memoized product card component
-  const ProductCard = React.memo(({ product, onEdit, onDelete }: {
-    product: Product;
-    onEdit: (product: Product) => void;
-    onDelete: (id: string) => void;
-  }) => (
+// Memoized product card component
+const ProductCard = React.memo(({ product, onEdit, onDelete }: {
+  product: Product;
+  onEdit: (product: Product) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const categoryKey = product.category.toLowerCase() as Category;
+  const categoryStyle = categoryColors[categoryKey] || 'bg-gray-100 text-gray-800';
+  
+  return (
     <motion.div
       className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
       initial={{ opacity: 0, y: 20 }}
@@ -308,7 +59,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           loading="lazy"
         />
         <div className="absolute top-4 left-4">
-          <span className={`px-3 py-1 rounded-full text-sm font-bold ${categoryColors[product.category]}`}>
+          <span className={`px-3 py-1 rounded-full text-sm font-bold ${categoryStyle}`}>
             {product.category}
           </span>
         </div>
@@ -345,7 +96,264 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
       </div>
     </motion.div>
-  ));
+  );
+});
+
+// Main component
+const ManageProducts = () => {
+  const { fetchProducts, createProduct, updateProduct, deleteProduct } = useAuth();
+  
+  // State management
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: '',
+    price: 0,
+    description: '',
+    category: 'burger',
+    image: '',
+    imageFile: undefined
+  });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<Category | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch products on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchProducts();
+        
+        // Handle both cases: direct array or object with data property
+        let productsArray: Product[];
+        if (Array.isArray(response)) {
+          productsArray = response;
+        } else if (response && Array.isArray(response.data)) {
+          productsArray = response.data;
+        } else {
+          console.warn('Unexpected API response format:', response);
+          setProducts([]);
+          throw new Error('Invalid products data format');
+        }
+        
+        setProducts(productsArray);
+      } catch (error) {
+        console.error('Error loading products:', error);
+        toast.error('Failed to load products');
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [fetchProducts]);
+
+  // Memoized filtered products
+  const filteredProducts = useMemo(() => {
+    // Ensure products is always an array
+    const safeProducts = Array.isArray(products) ? products : [];
+    
+    return safeProducts.filter(product => {
+      // Skip invalid products
+      if (!product || typeof product !== 'object') return false;
+      
+      // Provide defaults for required fields
+      const name = String(product.name || '');
+      const description = String(product.description || '');
+      const category = String(product.category || '').toLowerCase();
+      
+      const searchTermLower = String(searchTerm || '').toLowerCase();
+      const matchesSearch = name.toLowerCase().includes(searchTermLower) || 
+                          description.toLowerCase().includes(searchTermLower);
+      
+      // Handle case-insensitive category comparison
+      const matchesCategory = categoryFilter 
+        ? category === categoryFilter.toLowerCase()
+        : true;
+      
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, categoryFilter]);
+
+  // Pagination calculations
+  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
+  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  // Modal handlers
+  const openModal = (product?: Product) => {
+    if (product) {
+      setEditingProduct(product);
+      setFormData({
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        category: product.category.toLowerCase() as Category,
+        image: product.image
+      });
+    } else {
+      setEditingProduct(null);
+      setFormData({
+        name: '',
+        price: 0,
+        description: '',
+        category: 'burger',
+        image: ''
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  // Form handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'price' ? Math.max(0, parseFloat(value) || 0) : value
+    }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!VALID_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Please upload a JPEG, PNG, or JPG image');
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error('Image size should be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Create preview URL and store file
+      const previewUrl = URL.createObjectURL(file);
+      
+      setFormData(prev => ({
+        ...prev,
+        image: previewUrl,
+        imageFile: file
+      }));
+      
+      toast.success('Image selected successfully!');
+    } catch (error) {
+      toast.error('Failed to process image');
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Form validation
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+    
+    if (!formData.name.trim()) errors.push('Name is required');
+    if (!formData.price || formData.price <= 0) errors.push('Price must be positive');
+    if (!formData.description.trim()) errors.push('Description is required');
+    if (!formData.image) errors.push('Image is required');
+    
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return false;
+    }
+    return true;
+  };
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (!validateForm()) return;
+  
+  try {
+    // Create FormData for file upload
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name.trim());
+    formDataToSend.append('price', formData.price.toString());
+    formDataToSend.append('description', formData.description.trim());
+    formDataToSend.append('category', formData.category);
+    
+    // Append the image file if it exists
+    if (formData.imageFile) {
+      formDataToSend.append('image', formData.imageFile);
+    } else if (formData.image && !formData.image.startsWith('blob:')) {
+      // If editing and image hasn't changed, send the existing image URL
+      formDataToSend.append('image', formData.image);
+    } else {
+      toast.error('Please select an image');
+      return;
+    }
+    
+    if (editingProduct) {
+      // Update existing product
+      await updateProduct(editingProduct.id, formDataToSend);
+      const updatedProducts = await fetchProducts();
+      setProducts(updatedProducts);
+      toast.success('🍔 Product updated successfully!');
+      closeModal();
+    } else {
+      // Add new product
+      await createProduct(formDataToSend);
+      const updatedProducts = await fetchProducts();
+      setProducts(updatedProducts);
+      toast.success('🎉 New product added to the menu!');
+      closeModal();
+    }
+  } catch (error) {
+    console.error('Error saving product:', error);
+    toast.error('An error occurred while saving the product');
+  }
+};
+
+  // Product actions
+  const handleDelete = async (productId: string) => {
+    if (window.confirm('Are you sure you want to remove this item from the menu?')) {
+      try {
+        const success = await deleteProduct(productId);
+        if (success) {
+          // Refresh products after deletion
+          const updatedProducts = await fetchProducts();
+          if (updatedProducts) {
+            setProducts(updatedProducts);
+            toast.success('🗑️ Product removed from menu!');
+            
+            // Reset to first page if current page becomes empty
+            if (currentProducts.length === 1 && currentPage > 1) {
+              setCurrentPage(currentPage - 1);
+            }
+          }
+        } else {
+          toast.error('Failed to delete product');
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        toast.error('An error occurred while deleting the product');
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -386,25 +394,25 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset to first page on search
+              setCurrentPage(1);
             }}
             aria-label="Search products"
           />
         </div>
         <select
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-          value={categoryFilter || ''}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value as Category | null);
-            setCurrentPage(1); // Reset to first page on filter change
-          }}
-          aria-label="Filter by category"
-        >
-          <option value="">All Categories</option>
-          <option value="Burger">Burgers</option>
-          <option value="Pizza">Pizza</option>
-          <option value="Juice">Juice</option>
-        </select>
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+            value={categoryFilter || ''}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value as Category | null);
+              setCurrentPage(1);
+            }}
+            aria-label="Filter by category"
+          >
+            <option value="">All Categories</option>
+            <option value="burger">Burgers</option>
+            <option value="pizza">Pizza</option>
+            <option value="juice">Juice</option>
+          </select>
       </div>
 
       {/* Products Grid */}
@@ -542,18 +550,18 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-2">
                     Category
                   </label>
-                <select
-                  id="product-category"
-                  name="category"
-                  value={formData.category.toLowerCase()} // Convert to lowercase
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                  aria-required="true"
-                >
-                  <option value="burger">Burger</option>
-                  <option value="pizza">Pizza</option>
-                  <option value="juice">Juice</option>
-                </select>
+                  <select
+                    id="product-category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                    aria-required="true"
+                  >
+                    <option value="burger">Burger</option>
+                    <option value="pizza">Pizza</option>
+                    <option value="juice">Juice</option>
+                  </select>
                 </div>
 
                 <div>
@@ -611,7 +619,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Recommended size: 800x500px or larger (Max 5MB)
+                    Recommended size: 800x500px or larger (Max 2MB)
                   </p>
                 </div>
 

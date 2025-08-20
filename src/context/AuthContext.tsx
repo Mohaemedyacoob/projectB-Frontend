@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Product, User,BlogPost } from '../types';
+import { Product, User, BlogPost } from '../types';
 import toast from 'react-hot-toast';
-
 
 interface AuthContextType {
   user: User | null;
@@ -13,9 +12,11 @@ interface AuthContextType {
   updateProduct: (id: string, data: Partial<Product>) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
   updateProductCustom: (id: string, data: Partial<Product>) => Promise<boolean>;
-  // Add blog-related functions
+  // Blog-related functions
   fetchBlogs: () => Promise<BlogPost[] | null>;
+  getBlog: (id: string) => Promise<BlogPost | null>;
   createBlog: (data: { blog_name: string; imageFile: File }) => Promise<boolean>;
+  updateBlog: (id: string, data: { blog_name?: string; imageFile?: File }) => Promise<boolean>;
   deleteBlog: (id: string) => Promise<boolean>;
 }
 
@@ -44,7 +45,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       }
     };
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // First attempt with current token
       const { headers } = getAuthHeaders();
-      let response = await fetch(url, { ...options, headers });
+      let response = await fetch(url, { ...options, headers: { ...headers, ...options.headers } });
 
       // If unauthorized, try refreshing token
       if (response.status === 401) {
@@ -169,67 +169,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authFetch(API_BASE);
       if (!response.ok) throw new Error('Failed to fetch products');
-      return await response.json();
+      
+      const data = await response.json();
+      // Extract the products array from the paginated response
+      return data.data || [];
     } catch (error) {
       console.error('Fetch products error:', error);
       return null;
     }
   };
 
- const createProduct = async (data: Omit<Product, 'id' | 'createdAt'> & { imageFile?: File }): Promise<boolean> => {
-  try {
-    const formData = new FormData();
-    
-    // Append all fields properly
-    formData.append('name', data.name);
-    formData.append('price', data.price.toString());
-    formData.append('description', data.description);
-    formData.append('category', data.category.toLowerCase()); // Convert to lowercase    
-    // Handle image file
-    if (data.imageFile) {
-      formData.append('image', data.imageFile);
-    } if (data.image.startsWith('blob:')) {
-      // Convert blob URL to file
-      const response = await fetch(data.image);
-      const blob = await response.blob();
-      const file = new File([blob], 'product-image.jpg', { type: blob.type });
-      formData.append('image', file);
-    }
+  const createProduct = async (formData: FormData): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('burger-mafia-token');
+      const response = await fetch(`${API_BASE}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-    const response = await authFetch(`${API_BASE}`, {
-      method: 'POST',
-      body: formData // Let browser set Content-Type
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Create product failed:', errorData);
-      
-      // Show all validation errors
-      if (errorData.error) {
-        Object.entries(errorData.error).forEach(([field, errors]) => {
-          if (Array.isArray(errors)) {
-            errors.forEach(error => toast.error(`${field}: ${error}`));
-          }
-        });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create product');
       }
+
+      const product = await response.json();
+      console.log('Product created successfully:', product);
+      return true;
+    } catch (error) {
+      console.error('Create product error:', error);
+      toast.error('Failed to create product');
       return false;
     }
+  };
 
-    return true;
-  } catch (error) {
-    console.error('Create product error:', error);
-    toast.error('Failed to create product');
-    return false;
-  }
-};
-
-  const updateProduct = async (id: string, data: Partial<Product>): Promise<boolean> => {
+  const updateProduct = async (id: string, data: Partial<Product> & { imageFile?: File }): Promise<boolean> => {
     try {
+      const formData = new FormData();
+      
+      // Append updated fields
+      if (data.name) formData.append('name', data.name);
+      if (data.price) formData.append('price', data.price.toString());
+      if (data.description) formData.append('description', data.description);
+      if (data.category) formData.append('category', data.category.toLowerCase());
+      
+      // Handle image file
+      if (data.imageFile) {
+        formData.append('image', data.imageFile);
+      }
+
+      // Use POST method with _method=PUT for Laravel compatibility
+      formData.append('_method', 'PUT');
+
       const response = await authFetch(`${API_BASE}/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('burger-mafia-token')}`,
+        },
+        body: formData
       });
+
       return response.ok;
     } catch (error) {
       console.error('Update product error:', error);
@@ -262,72 +263,131 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-const fetchBlogs = async (): Promise<BlogPost[] | null> => {
-  try {
-    const response = await authFetch(API_BASE_BLOG);
-    if (!response.ok) throw new Error('Failed to fetch blogs');
-    const data = await response.json();
-    console.log(data);
-    // Transform the data to match your interface
-    return data.map((blog: any) => ({
-      ...blog,
-      created_at: blog.created_at // Map created_at to createdAt
-    }));
-  } catch (error) {
-    console.error('Fetch blogs error:', error);
-    return null;
-  }
-};
-
-const createBlog = async (data: { blog_name: string; imageFile: File }): Promise<boolean> => {
-  try {
-    const formData = new FormData();
-    formData.append('blog_name', data.blog_name);
-    formData.append('image', data.imageFile);
-
-    const response = await authFetch(API_BASE_BLOG, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Create blog failed:', errorData);
+  // Blog API calls
+  const fetchBlogs = async (): Promise<BlogPost[] | null> => {
+    try {
+      const response = await authFetch(API_BASE_BLOG);
+      if (!response.ok) throw new Error('Failed to fetch blogs');
       
-      if (errorData.error) {
-        Object.entries(errorData.error).forEach(([field, errors]) => {
-          if (Array.isArray(errors)) {
-            errors.forEach(error => toast.error(`${field}: ${error}`));
-          }
-        });
+      const data = await response.json();
+      
+      // Extract the data array from paginated response and transform
+      const blogsData = data.data || [];
+      
+      return blogsData.map((blog: any) => ({
+        ...blog,
+        created_at: blog.created_at
+      }));
+    } catch (error) {
+      console.error('Fetch blogs error:', error);
+      return null;
+    }
+  };
+
+  const getBlog = async (id: string): Promise<BlogPost | null> => {
+    try {
+      const response = await authFetch(`${API_BASE_BLOG}/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch blog');
+      
+      const blogData = await response.json();
+      
+      return {
+        ...blogData,
+        created_at: blogData.created_at
+      };
+    } catch (error) {
+      console.error('Get blog error:', error);
+      return null;
+    }
+  };
+
+  const createBlog = async (data: { blog_name: string; imageFile: File }): Promise<boolean> => {
+    try {
+      const formData = new FormData();
+      formData.append('blog_name', data.blog_name);
+      formData.append('image', data.imageFile);
+
+      const response = await authFetch(API_BASE_BLOG, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Create blog failed:', errorData);
+        
+        if (errorData.error) {
+          Object.entries(errorData.error).forEach(([field, errors]) => {
+            if (Array.isArray(errors)) {
+              errors.forEach(error => toast.error(`${field}: ${error}`));
+            }
+          });
+        }
+        return false;
       }
+
+      return true;
+    } catch (error) {
+      console.error('Create blog error:', error);
+      toast.error('Network error while creating blog');
       return false;
     }
+  };
 
-    return true;
-  } catch (error) {
-    console.error('Create blog error:', error);
-    toast.error('Network error while creating blog');
-    return false;
-  }
-};
+  const updateBlog = async (id: string, data: { blog_name?: string; imageFile?: File }): Promise<boolean> => {
+    try {
+      const formData = new FormData();
+      
+      // Append updated fields if provided
+      if (data.blog_name) formData.append('blog_name', data.blog_name);
+      
+      // Handle image file
+      if (data.imageFile) {
+        formData.append('image', data.imageFile);
+      }
 
-const deleteBlog = async (id: string): Promise<boolean> => {
-  try {
-    const response = await authFetch(`${API_BASE_BLOG}/${id}`, {
-      method: 'DELETE',
-    });
-    return response.ok;
-  } catch (error) {
-    console.error('Delete blog error:', error);
-    return false;
-  }
-};
+      const response = await authFetch(`${API_BASE_BLOG}/${id}`, {
+        method: 'PUT',
+        body: formData
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Update blog failed:', errorData);
+        
+        if (errorData.error) {
+          Object.entries(errorData.error).forEach(([field, errors]) => {
+            if (Array.isArray(errors)) {
+              errors.forEach(error => toast.error(`${field}: ${error}`));
+            }
+          });
+        }
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Update blog error:', error);
+      toast.error('Network error while updating blog');
+      return false;
+    }
+  };
+
+  const deleteBlog = async (id: string): Promise<boolean> => {
+    try {
+      const response = await authFetch(`${API_BASE_BLOG}/${id}`, {
+        method: 'DELETE',
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Delete blog error:', error);
+      return false;
+    }
+  };
 
   return (
     <AuthContext.Provider
-       value={{
+      value={{
         user,
         login,
         logout,
@@ -338,9 +398,11 @@ const deleteBlog = async (id: string): Promise<boolean> => {
         deleteProduct,
         updateProductCustom,
         fetchBlogs,
+        getBlog,
         createBlog,
+        updateBlog,
         deleteBlog,
-    }}
+      }}
     >
       {children}
     </AuthContext.Provider>

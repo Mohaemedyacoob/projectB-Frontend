@@ -44,7 +44,7 @@ const ManageBlogs = () => {
       setEditingPost(post);
       setFormData({
         blog_name: post.blog_name,
-        image: post.image
+        image: post.image || ''
       });
       setImageFile(null);
     } else {
@@ -73,6 +73,7 @@ const ManageBlogs = () => {
   };
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,11 +96,7 @@ const ManageBlogs = () => {
     try {
       // Create a preview URL for the image
       const imageUrl = URL.createObjectURL(file);
-      
-      setFormData(prev => ({
-        ...prev,
-        [name]: name === 'image' ? imageUrl : value
-      }));
+      setImagePreview(imageUrl);
       
       // Store the file for later submission
       setImageFile(file);
@@ -227,9 +224,26 @@ const ManageBlogs = () => {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-500">Image Not Displayed</span>
-              </div>
+              {post.image ? (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={post.image} 
+                    alt={post.blog_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center hidden">
+                    <span className="text-gray-500">Image Not Displayed</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500">No Image</span>
+                </div>
+              )}
               
               <div className="p-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
@@ -317,10 +331,18 @@ const ManageBlogs = () => {
                   </label>
                   <div className="flex flex-col space-y-4">
                     <div className="w-full h-48 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <Upload className="h-10 w-10 mx-auto text-gray-400" />
-                        <p className="text-gray-500 mt-2">Image upload disabled</p>
-                      </div>
+                      {imagePreview || (editingPost && editingPost.image) ? (
+                        <img 
+                          src={imagePreview || editingPost?.image} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <Upload className="h-10 w-10 mx-auto text-gray-400" />
+                          <p className="text-gray-500 mt-2">Upload an image</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex space-x-2">
@@ -328,25 +350,24 @@ const ManageBlogs = () => {
                         type="file"
                         ref={fileInputRef}
                         onChange={handleImageUpload}
-                        accept="image/png, image/jpeg, image/jpg"
+                        accept="image/png, image/jpeg, image/jpg, image/webp"
                         className="hidden"
-                        disabled
                       />
                       <motion.button
                         type="button"
                         onClick={triggerFileInput}
-                        className="flex-1 bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
-                        whileHover={{ scale: 1 }}
-                        whileTap={{ scale: 1 }}
-                        disabled
+                        className="flex-1 bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isUploading}
                       >
                         <Upload className="h-4 w-4" />
-                        <span>Image Upload Disabled</span>
+                        <span>{isUploading ? 'Uploading...' : 'Select Image'}</span>
                       </motion.button>
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Image functionality is currently disabled
+                    Supported formats: JPEG, PNG, JPG, WEBP. Max size: 2MB
                   </p>
                 </div>
 
@@ -356,7 +377,7 @@ const ManageBlogs = () => {
                     className="flex-1 bg-yellow-400 text-black py-3 rounded-lg font-bold hover:bg-yellow-300 transition-colors flex items-center justify-center space-x-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUploading}
                   >
                     <Save className="h-5 w-5" />
                     <span>
